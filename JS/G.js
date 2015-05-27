@@ -273,7 +273,6 @@ function Bullet(img,x,y,dir){
 }
 
 
-
 //funzioni di pubblica utilità
 
 function tabellizeCoords(x,y,w,h){			//ritorna coordinate sulla tabella partendo dalle x e y attuali
