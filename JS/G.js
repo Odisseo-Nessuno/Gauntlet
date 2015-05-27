@@ -313,7 +313,28 @@ function fromDirToRot(dir){	//dir x,y c.e: {-1 0 1}
 function go(e){
 	var ch= String.fromCharCode(e.keyCode);
 	//console.log(ch)
-	switch (ch){
+	var pd=[]				//proiettile direzione
+	switch (ch){			//trovare soluzione intelligente
+		case 'I':
+			pd=[0,-1]
+			giocatore.direction=pd;
+			giocatore.createBullet();
+			break;
+		case 'K':
+			pd=[0,1]
+			giocatore.direction=pd;
+			giocatore.createBullet();		
+			break;
+		case 'L':
+			pd=[1,0]
+			giocatore.direction=pd;
+			giocatore.createBullet();
+			break;
+		case 'J':
+			pd=[-1,0]
+			giocatore.direction=pd;
+			giocatore.createBullet();
+			break;									
 		case 'S':
 			my=1;
 			break;
