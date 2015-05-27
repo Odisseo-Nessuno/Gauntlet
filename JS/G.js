@@ -211,6 +211,7 @@ function Player(x,y,h){
 
 
 	this.createBullet=function(){
+		console.log("newBullet")
 		var pro=new Bullet(null,this.x,this.y,this.direction)
 		this.bullets.push(pro);
 	}
@@ -322,7 +323,8 @@ function go(e){
 		case 'I':
 			document.getElementById("servo").style="z-index:0;";
 			break;			
-		case 'M':
+		case 'Q':
+			console.log("Q");
 			giocatore.createBullet();
 			break;	
 		console.log(document.getElementById("servo"))
