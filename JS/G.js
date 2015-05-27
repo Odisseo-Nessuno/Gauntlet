@@ -86,8 +86,7 @@ function i_prova(){
 
 function i_update(){
 	actx.clearRect(0,0,Wterr,Hterr);
-	giocatore.move(mappa.map);
-	giocatore.draw();
+	giocatore.update();
 	requestAnimationFrame(i_update);
 	
 }
@@ -159,23 +158,13 @@ function Player(x,y,h){
 	this.rx=(x/32).toFixed();
 	this.ry=(y/32).toFixed();
 
-	this.update=function(){
-		move();
-		for(var i = 0; i<this.bullets.length; i++){
-			this.bullets[i].move(mappa.map);
-			if(this.bullets[i].checkDestroyCondition()){
-				this.bullets[i]=null;
-				this.bullets.splice(i,1);
-			}
-
-		}
-	}
 
 	this.referencePosition=function(nx,ny){
 		return([parseInt((this.x+nx)/32).toFixed(), parseInt(((this.y+ny)/32).toFixed())] )
 	}
 
-	this.move=function(map){
+	this.move=function(){
+		var map=mappa.map
 		if(noMove==false){
 			var dir = aCasoBottoni(); //x,y   ---------> #°# <--------
 			mx=my=0;
@@ -184,9 +173,9 @@ function Player(x,y,h){
 			var dy=parseInt(this.ry)+(dir[1])
 			if(map[dy][dx]==0 && (dir[0]!=0 || dir[1]!=0)){
 				noMove=true;
-				this.movingCounter=8
-				this.movingX=dir[0]*4;
-				this.movingY=dir[1]*4;
+				this.movingCounter=16
+				this.movingX=dir[0]*2;
+				this.movingY=dir[1]*2;
 				this.direction=dir;
 			}
 		}
@@ -212,8 +201,10 @@ function Player(x,y,h){
 
 	this.createBullet=function(){
 		console.log("newBullet")
-		var pro=new Bullet(null,this.x,this.y,this.direction)
-		this.bullets.push(pro);
+		if(this.bullets.length==0){					//NOTA: magari in futuro si faranno più proiettili contemporaneamente... il codice è gia' pronto...
+			var pro=new Bullet(null,this.x,this.y,this.direction)
+			this.bullets.push(pro);
+		}
 	}
 
 	this.draw=function(){
@@ -223,6 +214,21 @@ function Player(x,y,h){
 		}
 		drawRotatedImage(enImgs[0],this.x,this.y,fromDirToRot(this.direction));
 	}
+	this.print2=function(){
+		console.log("2")
+	}
+	this.update=function(){
+		this.move();
+		for(var i = 0; i<this.bullets.length; i++){
+			this.bullets[i].update();
+			if(this.bullets[i].checkDestroyCondition()){
+				this.bullets[i]=null;
+				this.bullets.splice(i,1);
+			}
+
+		}
+		this.draw();
+	}
 
 
 }
@@ -231,29 +237,33 @@ function Bullet(img,x,y,dir){
 	this.img=img;
 	this.x =x;
 	this.y=y;
-	var rif = tabellizeCoords(this.x,this.y)
+	var rif =tabellizeCoords(this.x,this.y,8,8)
 	this.rx=rif[0];
 	this.ry=rif[1];		
 	this.dirs=dir;
 
 
 	this.tabCoords=function(){
-	var rif = tabellizeCoords(this.x,this.y)
+	var rif = tabellizeCoords(this.x,this.y,8,8)
 	this.rx=rif[0];
 	this.ry=rif[1];		
 	}
 
 	this.move=function(){
-		this.x+=dirs[0];
-		this.y+=dirs[1];
-		tabCoords();			//aggiorno rx e ry
+		this.x+=this.dirs[0]*5;
+		this.y+=this.dirs[1]*5;
+		this.tabCoords();			//aggiorno rx e ry
+		console.log(this.rx,this.ry)
 	}
 
 	this.draw=function(){
 		actx.fillStyle="red";
-		actx.fillRect(this.rx*32-4,this.ry*32-4,8,8)
+		actx.fillRect(this.x-4,this.y-4,8,8)
 	}
-
+	this.update=function(){
+		this.move()
+		this.draw();
+	}
 	this.checkDestroyCondition=function(){
 		if(mappa.map[this.ry][this.rx]!=0){
 			return true;
@@ -263,11 +273,10 @@ function Bullet(img,x,y,dir){
 }
 
 
-
 //funzioni di pubblica utilità
 
-function tabellizeCoords(x,y){			//ritorna coordinate sulla tabella partendo dalle x e y attuali
-	return ([(((x-16)/32).toFixed()),( ((y-16)/32 ).toFixed() )]);
+function tabellizeCoords(x,y,w,h){			//ritorna coordinate sulla tabella partendo dalle x e y attuali
+	return ([(((x-w/2)/32).toFixed()),( ((y-h/2)/32 ).toFixed() )]);
 }
 
 
