@@ -2,21 +2,7 @@
 var WI=window.innerWidth;
 var HE=window.innerHeight;
 
-var mappaProva=[
-				[1,1,1,1,1,1,1,1,1,1,1,1],
-				[1,1,1,1,1,1,0,0,0,0,0,1],
-				[1,0,0,0,1,0,0,0,0,0,0,1],
-				[1,0,0,0,1,0,0,1,0,0,0,1],
-				[1,0,0,0,0,0,0,1,0,0,0,1],
-				[1,0,1,1,1,1,1,1,0,0,0,1],
-				[1,0,0,0,0,0,0,0,0,0,0,1],
-				[1,0,0,0,0,0,0,0,0,0,0,1],
-				[1,0,0,0,0,0,0,0,0,0,0,1],
-				[1,0,0,0,1,1,1,0,0,0,0,1],
-				[1,0,0,0,1,0,1,0,0,0,0,1],
-				[1,0,0,1,1,0,0,0,0,0,0,1],
-				[1,1,1,1,1,1,1,1,1,1,1,1]				
-				];
+var mappaProva=[[1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,0,0,0,0,0,1],[1,0,0,0,1,0,0,0,0,0,0,1],[1,0,1,0,1,0,0,1,0,0,0,1],[1,0,1,0,0,0,0,1,0,0,0,1],[1,0,1,1,1,1,1,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,0,0,0,0,0,0,0,1],[1,0,0,0,1,1,1,1,1,1,0,1],[1,0,0,0,1,0,1,0,0,0,0,1],[1,0,0,1,1,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1]]
 
 var mappa= new Terreno(mappaProva);
 
@@ -90,7 +76,7 @@ function i_update(){
 }
 
 function loadTImages(){							// callback è la funzione da eseguire al verificarsi di una condizione. nel nostro caso quando si finisce di caricare tutte le immagini.
-	var timg = ["imgs/bt.jpg","imgs/bw.jpg"];			//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
+	var timg = ["imgs/prova.png","imgs/bw.jpg"];			//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
 	for (var i=0; i< timg.length; i++){					// e nella mappa 0 significa terreno libero
 		loadSingleImg(i,timg,loadEImages,0);			// faccio una nuova funzione perchè altrimenti al prossimo ciclo mi sovrascrive l'indice dell'immagine da caricare
 	}
@@ -128,21 +114,10 @@ function Terreno(map){			//si assume map matrice
 	this.map =map;
 
 	this.makeTerr=function(){
-		for (var i=0; i<(this.map.length); i++){
-			for(var k=0; k<this.map[i].length; k++){
-				ctx.drawImage(terrImgs[this.map[i][k]],k*32-16,i*32-16,32,32); //per ogni elemento di map disegno l'immagine corrispondente
-				if (debug){
-					ctx.rect(k*32-16,i*32-16,32,32);
-					ctx.stroke();
-					ctx.rect(k*32,i*32,2,2)
-					ctx.font="10px Georgia";
-					//console.log(i)
-					ctx.fillText(k+" "+i+".",k*32-8,i*32-16);
-				}
-			}
-		}
+		ctx.drawImage(terrImgs[1],0,0)
 	}
 }
+
 
 function Player(x,y,h){
 	this.x=x;
