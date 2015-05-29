@@ -2,11 +2,6 @@
 var WI=window.innerWidth;
 var HE=window.innerHeight;
 
-
-
-
-
-
 var mappaProva=[
 				[1,1,1,1,1,1,1,1,1,1,1,1],
 				[1,1,1,1,1,1,0,0,0,0,0,1],
@@ -25,7 +20,7 @@ var mappaProva=[
 
 var mappa= new Terreno(mappaProva);
 
-var Wterr=(mappa.map.length)*32 		//stabilite caselle grandi 32
+var Wterr=(mappa.map.length)*32 		//stabilite caselle grandi 32 px
 var Hterr=(mappa.map[1].length)*32+32
 var giocatore=new Player(64,128,100);
 
@@ -49,6 +44,8 @@ var enImgs=[] 									// array che contiene tutte le immagini dei nemici
 
 var mx=500;
 var my=500;
+
+var nemicoProva= new Nemico(0,5,5);
 
 loadTImages();
 
@@ -87,6 +84,7 @@ function i_prova(){
 function i_update(){
 	actx.clearRect(0,0,Wterr,Hterr);
 	giocatore.update();
+	nemicoProva.update();
 	requestAnimationFrame(i_update);
 	
 }
@@ -232,6 +230,75 @@ function Player(x,y,h){
 
 
 }
+
+
+
+function Nemico(img,rx,ry){
+	this.rx=rx;					// riferimento della casella
+	this.ry=ry; 
+	this.x=rx*32;
+	this.y=ry*32;
+	this.direzione=[0,0];
+	this.isMoving=false;
+	this.counter=0;
+	this.speed=32;
+	this.img=img;
+
+	this.health=100;
+
+	this.draw=function(){
+		drawRotatedImage(enImgs[this.img],this.x,this.y,fromDirToRot(this.direzione))	//disegno alle sue  x e y con rotazione data dalla direzione attuale
+	} 
+
+	this.scegliDirezione=function(){
+		var returnDir=[0,0];
+		var nrx = parseInt(this.rx);
+		var nry = parseInt(this.ry);
+		var grx=parseInt(giocatore.rx);
+		var gry=parseInt(giocatore.ry);
+		if(nrx<grx)
+			returnDir[0]=1;
+		else if(nrx>grx)
+			returnDir[0]=-1
+		if(nry<gry)
+			returnDir[1]=1;
+		else if(nry>gry)
+			returnDir[1]=-1
+		return returnDir;
+	}
+
+	this.move=function(){
+		if(this.isMoving){
+			this.counter -=1;
+			this.x+=this.direzione[0]*(32/this.speed);
+			this.y+=this.direzione[1]*(32/this.speed);
+			if (this.counter==0){
+				this.isMoving=false;
+			}
+			var newRef  = tabellizeCoords(this.x,this.y,32,32);
+			this.rx=newRef[0];
+			this.ry=newRef[1];
+		}
+		else{
+			var newDir = this.scegliDirezione();
+			if (  mappa.map[parseInt(this.ry)+newDir[1]] [parseInt(this.rx)+newDir[0]] ==0){
+				this.isMoving=true;
+				this.counter=this.speed;
+				this.direzione=newDir;
+			}
+		}
+	}
+	this.update=function(){
+		this.move();
+		this.draw();
+		//this.checkDeath();				//TODO
+	}
+
+}
+
+
+
+
 
 function Bullet(img,x,y,dir){
 	this.img=img;
