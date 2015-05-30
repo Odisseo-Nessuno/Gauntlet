@@ -2,23 +2,10 @@
 var WI=window.innerWidth;
 var HE=window.innerHeight;
 
-var mappaProva=[
-				[1,1,1,1,1,1,1,1,1,1,1,1],
-				[1,1,1,1,1,1,0,0,0,0,0,1],
-				[1,0,0,0,1,0,0,0,0,0,0,1],
-				[1,0,0,0,1,0,0,1,0,0,0,1],
-				[1,0,0,0,0,0,0,1,0,0,0,1],
-				[1,0,1,1,1,1,1,1,0,0,0,1],
-				[1,0,0,0,0,0,0,0,0,0,0,1],
-				[1,0,0,0,0,0,0,0,0,0,0,1],
-				[1,0,0,0,0,0,0,0,0,0,0,1],
-				[1,0,0,0,1,1,1,0,0,0,0,1],
-				[1,0,0,0,1,0,1,0,0,0,0,1],
-				[1,0,0,1,1,0,0,0,0,0,0,1],
-				[1,1,1,1,1,1,1,1,1,1,1,1]				
-				];
+var mappaProva=[[1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,0,0,0,0,0,1],[1,0,0,0,1,0,0,0,0,0,0,1],[1,0,1,0,1,0,0,1,0,0,0,1],[1,0,1,0,0,0,0,1,0,0,0,1],[1,0,1,1,1,1,1,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,0,0,0,0,0,0,0,1],[1,0,0,0,1,1,1,1,1,1,0,1],[1,0,0,0,1,0,1,0,0,0,0,1],[1,0,0,1,1,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1]]
 
 var mappa= new Terreno(mappaProva);
+var arrayNemici=[];
 
 var Wterr=(mappa.map.length)*32 		//stabilite caselle grandi 32 px
 var Hterr=(mappa.map[1].length)*32+32
@@ -34,8 +21,8 @@ a.height=Hterr;
 var ctx = c.getContext("2d");
 var actx=a.getContext("2d");
 
-var debug=true;//variabili di debug
-var debugP=true;
+var debug=false;//variabili di debug
+var debugP=false;
 
 var noMove=false;
 
@@ -45,30 +32,25 @@ var enImgs=[] 									// array che contiene tutte le immagini dei nemici
 var mx=500;
 var my=500;
 
-var nemicoProva= new Nemico(0,5,5);
+var nemicoProva= new Nemico(1,5,5);
 
 loadTImages();
 
 
+
+
+
+function provaNemici(){
+	for (var i=2;i<7; i++ )
+		arrayNemici.push(new Nemico(1,i,6));
+}
+
 function drawRotatedImage(image, x, y, angle) { 
 var TO_RADIANS = Math.PI/180; 
- 
-	// save the current co-ordinate system 
-	// before we screw with it
 	actx.save(); 
- 
-	// move to the middle of where we want to draw our image
 	actx.translate(x, y);
- 
-	// rotate around that point, converting our 
-	// angle from degrees to radians 
 	actx.rotate(angle * TO_RADIANS);
- 
-	// draw it up and to the left by half the width
-	// and height of the image 
 	actx.drawImage(image, -(image.width/2), -(image.height/2));
- 
-	// and restore the co-ords to how they were when we began
 	actx.restore(); 
 }
 
@@ -77,6 +59,7 @@ var TO_RADIANS = Math.PI/180;
 function i_prova(){
 	////console.log("ok... sono i prova")
 	mappa.makeTerr();
+	provaNemici();
 	i_update();
 }
 
@@ -84,19 +67,25 @@ function i_prova(){
 function i_update(){
 	actx.clearRect(0,0,Wterr,Hterr);
 	giocatore.update();
-	nemicoProva.update();
+	for(var i=0; i< arrayNemici.length; i++){
+		if(arrayNemici[i].update()){
+			arrayNemici[i]=null;
+			arrayNemici.splice(i,1);
+		}
+	}
+
 	requestAnimationFrame(i_update);
-	
 }
 
+
 function loadTImages(){							// callback è la funzione da eseguire al verificarsi di una condizione. nel nostro caso quando si finisce di caricare tutte le immagini.
-	var timg = ["imgs/bt.jpg","imgs/bw.jpg"];			//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
+	var timg = ["imgs/prova.png","imgs/bw.jpg"];			//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
 	for (var i=0; i< timg.length; i++){					// e nella mappa 0 significa terreno libero
 		loadSingleImg(i,timg,loadEImages,0);			// faccio una nuova funzione perchè altrimenti al prossimo ciclo mi sovrascrive l'indice dell'immagine da caricare
 	}
 }
 function loadEImages(callback){							// callback è la funzione da eseguire al verificarsi di una condizione. nel nostro caso quando si finisce di caricare tutte le immagini.
-	var timg = ["imgs/boh.png"];								//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
+	var timg = ["imgs/boh.png","imgs/z.png"];								//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
 	for (var i=0; i< timg.length; i++){					// e nella mappa 0 significa terreno libero
 		loadSingleImg(i,timg,i_prova,1);					// faccio una nuova funzione perchè altrimenti al prossimo ciclo mi sovrascrive l'indice dell'immagine da caricare
 	}
@@ -128,21 +117,10 @@ function Terreno(map){			//si assume map matrice
 	this.map =map;
 
 	this.makeTerr=function(){
-		for (var i=0; i<(this.map.length); i++){
-			for(var k=0; k<this.map[i].length; k++){
-				ctx.drawImage(terrImgs[this.map[i][k]],k*32-16,i*32-16,32,32); //per ogni elemento di map disegno l'immagine corrispondente
-				if (debug){
-					ctx.rect(k*32-16,i*32-16,32,32);
-					ctx.stroke();
-					ctx.rect(k*32,i*32,2,2)
-					ctx.font="10px Georgia";
-					//console.log(i)
-					ctx.fillText(k+" "+i+".",k*32-8,i*32-16);
-				}
-			}
-		}
+		ctx.drawImage(terrImgs[1],0,0)
 	}
 }
+
 
 function Player(x,y,h){
 	this.x=x;
@@ -169,6 +147,7 @@ function Player(x,y,h){
 
 			var dx=parseInt(this.rx)+(dir[0])	//prossima posione di this
 			var dy=parseInt(this.ry)+(dir[1])
+						
 			if(map[dy][dx]==0 && (dir[0]!=0 || dir[1]!=0)){
 				noMove=true;
 				this.movingCounter=16
@@ -192,7 +171,7 @@ function Player(x,y,h){
 				this.ry=((this.y -16)/32 ).toFixed();
 				noMove=false;
 			}
-			console.log(noMove,this.movingX,this.movingY)
+			//console.log(noMove,this.movingX,this.movingY)
 		}
 	}
 
@@ -238,15 +217,21 @@ function Nemico(img,rx,ry){
 	this.ry=ry; 
 	this.x=rx*32;
 	this.y=ry*32;
+	this.plannedR=[rx,ry]
 	this.direzione=[0,0];
 	this.isMoving=false;
 	this.counter=0;
 	this.speed=32;
 	this.img=img;
-
 	this.health=100;
 
 	this.draw=function(){
+		if (debugP){
+			actx.strokeStyle="green";
+			actx.strokeRect((this.rx*32)-16,(this.ry*32)-16,32,32)
+			actx.strokeStyle="yellow";
+			actx.strokeRect((this.plannedR[0]*32)-10,(this.plannedR[1]*32)-10,20,20)			
+		}
 		drawRotatedImage(enImgs[this.img],this.x,this.y,fromDirToRot(this.direzione))	//disegno alle sue  x e y con rotazione data dalla direzione attuale
 	} 
 
@@ -278,21 +263,40 @@ function Nemico(img,rx,ry){
 			var newRef  = tabellizeCoords(this.x,this.y,32,32);
 			this.rx=newRef[0];
 			this.ry=newRef[1];
+			
 		}
 		else{
 			var newDir = this.scegliDirezione();
 			if (  mappa.map[parseInt(this.ry)+newDir[1]] [parseInt(this.rx)+newDir[0]] ==0){
+				mappa.map[this.ry][this.rx]=0;
+				this.plannedR=[(parseInt(this.rx)+newDir[0]),(parseInt(this.ry)+newDir[1])]
+				mappa.map[this.plannedR[1]][this.plannedR[0]]=2;
 				this.isMoving=true;
 				this.counter=this.speed;
 				this.direzione=newDir;
 			}
+			else
+				this.plannedR=[(parseInt(this.rx)),(parseInt(this.ry))]
 		}
 	}
 	this.update=function(){
 		this.move();
 		this.draw();
-		//this.checkDeath();				//TODO
+		return this.checkDeath();		
 	}
+	this.hit=function(dmg){ 				//sottrae vita al nemico in base ai danni dati dal proiettili
+		console.log("hit",this.health)
+		this.health -=dmg;
+	}
+	this.checkDeath=function(){			//controlla se il nemico muore
+		if(this.health<= 0){	
+			mappa.map[this.ry][this.rx]=0;
+			console.log(this.plannedR)
+			mappa.map[this.plannedR[1]][this.plannedR[0]]=0;
+			return true;	
+		}
+		return false;
+	}	
 
 }
 
@@ -308,6 +312,7 @@ function Bullet(img,x,y,dir){
 	this.rx=rif[0];
 	this.ry=rif[1];		
 	this.dirs=dir;
+	this.damage=50;
 
 
 	this.tabCoords=function(){
@@ -322,7 +327,6 @@ function Bullet(img,x,y,dir){
 		this.tabCoords();			//aggiorno rx e ry
 		console.log(this.rx,this.ry)
 	}
-
 	this.draw=function(){
 		actx.fillStyle="red";
 		actx.fillRect(this.x-4,this.y-4,8,8)
@@ -331,12 +335,22 @@ function Bullet(img,x,y,dir){
 		this.move()
 		this.draw();
 	}
-	this.checkDestroyCondition=function(){
-		if(mappa.map[this.ry][this.rx]!=0){
+	this.checkDestroyCondition=function(){			//se incontra un muro (1) o un nemico (2) ritorna true per essere distrutto. 
+		if(mappa.map[this.ry][this.rx]==1){
 			return true;
 		}
+		if(mappa.map[this.ry][this.rx]==2){
+			for(var i =0; i<arrayNemici.length; i++){
+				var nrx = parseInt(arrayNemici[i].rx)
+				var nry = parseInt(arrayNemici[i].ry)
+				if (this.ry==nry && this.rx==nrx){
+					arrayNemici[i].hit(this.damage);
+					return true;
+				}
+			}
+		}
 		return false;
-	};
+	}
 }
 
 
@@ -363,16 +377,33 @@ function castPositive(a){
 
 function fromDirToRot(dir){	//dir x,y c.e: {-1 0 1}
 	var ang=0;
+	var ndir = dir[0]+","+dir[1]
+	switch (ndir){
+		case '1,1':
+			ang=45;
+		break;
+		case '1,-1':
+			ang=315;
+		break;
+		case '0,1':
+			ang=90;
+		break;
+		case '0,-1':
+			ang=270;
+		break;
+		case '-1,1':
+			ang=135;
+		break;
+		case '-1,0':
+			ang=180;
+		break;
+		case '-1,-1':
+			ang=230;
+		break;					
+		return ang;
 
-	if(dir[0]<0){
-		ang=180;
-		if(dir[1]!=0){
-			ang=dir[1]*45;
-		}
 	}
-	else{
-		ang=dir[1]*90;
-	}
+
 	return ang;
 
 }
@@ -428,6 +459,22 @@ function go(e){
 	}
 }
 
+var d = {};
+onkeydown = function(e) { d[e.which] = true; };
+onkeyup = function(e) { d[e.which] = false; };
+
+function newValue(a,b) {
+    var n =  -(d[a] ? 1 : 0) + (d[b] ? 1 : 0);
+    return n;
+}
+
+function aCasoBottoni(){
+	var dx=newValue(65, 68);
+	var dy=newValue(87, 83);
+	return [dx,dy]
+}
+
+/*
 function aCasoBottoni(){
 	var dx=0;
 	var dy=0;
@@ -441,7 +488,7 @@ function aCasoBottoni(){
 		dy=-1;
 	return [dx,dy]
 }
-
+*/
 
 function acasoMove(){
 	var dx=0;
