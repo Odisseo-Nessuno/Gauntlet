@@ -34,6 +34,38 @@ var my=500;
 
 var nemicoProva= new Nemico(1,5,5);
 
+
+//QUESTI due incantesimi sarebbe bello metterli in un file separato per pulizia
+
+var splProva=new Spell("rallenta",[[0,1],[1,0],[-1,0],[0,-1]],function(n){
+	n.syncStateChange=function(){
+		this.speed*=2;
+		this.syncStateChange=null;
+	}
+},15,"Nemico")
+
+var splProva2 = new Spell("Teletrasporta",[[0,0]],function(){
+	giocatore.syncStateChange=function(){
+		var dx=0;
+		var dy=0;
+		do{
+			dx=parseInt(parseInt((Math.random())*10).toFixed()%3)+parseInt(this.rx);
+			dy=parseInt(parseInt((Math.random())*10).toFixed()%3)+parseInt(this.ry);
+			console.log("dx e dy",dx,dy)
+		}while((mappa.map[dy][dx]!=undefined) && (mappa.map[dy][dx]!=0))		//molto pericoloso
+		this.rx=dx;
+		this.ry=dy;
+		this.x=dx*32
+		this.y=dy*32
+		this.syncStateChange=null;
+	}
+},200,"Player")
+
+//
+
+var spells=[];
+spells.push(splProva);
+spells.push(splProva2);
 loadTImages();
 
 
@@ -129,6 +161,7 @@ function Player(x,y,h){
 	this.movingX=0;
 	this.movingY=0;
 	this.movingCounter=0;
+	this.syncStateChange=null;
 	this.health=h;
 	this.bullets=[]
 	this.rx=(x/32).toFixed();
@@ -170,6 +203,9 @@ function Player(x,y,h){
 				this.rx=((this.x -16)/32).toFixed();
 				this.ry=((this.y -16)/32 ).toFixed();
 				noMove=false;
+				if(this.syncStateChange!=null)
+					this.syncStateChange();
+
 			}
 			//console.log(noMove,this.movingX,this.movingY)
 		}
@@ -204,6 +240,7 @@ function Player(x,y,h){
 			}
 
 		}
+		spells.map(function(s){s.update()});
 		this.draw();
 	}
 
@@ -224,6 +261,7 @@ function Nemico(img,rx,ry){
 	this.speed=32;
 	this.img=img;
 	this.health=100;
+	this.syncStateChange=null;
 
 	this.draw=function(){
 		if (debugP){
@@ -232,7 +270,7 @@ function Nemico(img,rx,ry){
 			actx.strokeStyle="yellow";
 			actx.strokeRect((this.plannedR[0]*32)-10,(this.plannedR[1]*32)-10,20,20)			
 		}
-		drawRotatedImage(enImgs[this.img],this.x,this.y,fromDirToRot(this.direzione))	//disegno alle sue  x e y con rotazione data dalla direzione attuale
+		drawRotatedImage(enImgs[this.img],this.x,this.y,fromDirToRot(this.direzione))	//dimsegno alle sue  x e y con rotazione data dalla direzione attuale
 	} 
 
 	this.scegliDirezione=function(){
@@ -259,6 +297,9 @@ function Nemico(img,rx,ry){
 			this.y+=this.direzione[1]*(32/this.speed);
 			if (this.counter==0){
 				this.isMoving=false;
+				if(this.syncStateChange!=null){
+					this.syncStateChange();
+				}
 			}
 			var newRef  = tabellizeCoords(this.x,this.y,32,32);
 			this.rx=newRef[0];
@@ -343,7 +384,7 @@ function Bullet(img,x,y,dir){
 			for(var i =0; i<arrayNemici.length; i++){
 				var nrx = parseInt(arrayNemici[i].rx)
 				var nry = parseInt(arrayNemici[i].ry)
-				if (this.ry==nry && this.rx==nrx){
+				if (checkCollision(this.x,this.y,arrayNemici[i].x,arrayNemici[i].y,16,32)){
 					arrayNemici[i].hit(this.damage);
 					return true;
 				}
@@ -353,6 +394,47 @@ function Bullet(img,x,y,dir){
 	}
 }
 
+function Spell(name,area,effetto,cooldown,at){
+	this.nome=name;
+	this.area=area;					//se area ==[0,0] -> lincantesimo è per il giocatore
+	this.effetto=effetto;
+	this.cooldown=cooldown;
+	this.applyTo=at
+	this.timeCounter=0;
+
+	this.apply=function(x,y){
+		if(this.applyTo=="Nemico"){
+			var caselle=(this.area).map(function(a){return [x+a[0],y+a[1]]});
+			console.log(caselle)
+			var afflicted=arrayNemici.filter(function(n){			//nemici nell'area dell'incantsimo
+				for(var i=0; i<caselle.length; i++){
+					if(caselle[i][0]==n.rx && caselle[i][1]==n.ry)
+						return true;
+				}
+				return false;
+			})
+			afflicted.map(this.effetto)
+			this.timeCounter=this.cooldown;
+			console.log(afflicted)
+			//debug
+			actx.fillStyle="blue"
+			afflicted.map(function(i){actx.fillRect(i.x-16,i.y-16,32,32)})
+		}
+		else{
+			this.effetto();
+		}
+	}
+
+	this.update=function(){
+		if (this.timeCounter==0 ){
+			return true;
+		}
+		else{
+			this.timeCounter -=1;
+			return false;
+		}
+	}
+}
 
 //funzioni di pubblica utilità
 
@@ -418,6 +500,16 @@ function go(e){
 			giocatore.direction=pd;
 			giocatore.createBullet();
 			break;
+		case 'U':
+			if(splProva.timeCounter==0){
+				splProva.apply(parseInt(giocatore.rx),parseInt(giocatore.ry))
+			}
+			break;		
+		case 'Y':
+			if(splProva2.timeCounter==0){
+				splProva2.apply(parseInt(giocatore.rx),parseInt(giocatore.ry))
+			}
+			break;				
 		case 'K':
 			pd=[0,1]
 			giocatore.direction=pd;
@@ -473,22 +565,6 @@ function aCasoBottoni(){
 	var dy=newValue(87, 83);
 	return [dx,dy]
 }
-
-/*
-function aCasoBottoni(){
-	var dx=0;
-	var dy=0;
-	if( mx==1)
-		dx=1;
-	else if(mx==-1)
-		dx=-1
-	if (my==1)
-		dy=1;
-	else if(my==-1)
-		dy=-1;
-	return [dx,dy]
-}
-*/
 
 function acasoMove(){
 	var dx=0;
