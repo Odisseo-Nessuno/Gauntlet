@@ -89,6 +89,7 @@ var TO_RADIANS = Math.PI/180;
 // le due funzioni sono praticamente identiche. dato che ho messo il controllo di cambio immagine quando premo i tasti,
 // quando muovevo l'hero si muovevano anche i teschi. quindi per ora ho diviso le due funzioni solo per evitare sbatti :)
 
+//Vedere di risolvere la cosa qui :) 
 function drawRotatedImage(image, x, y, row) { 
 var TO_RADIANS = Math.PI/180; 
 	actx.save(); 
