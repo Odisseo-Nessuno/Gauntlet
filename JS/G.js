@@ -29,11 +29,11 @@ var noMove=false;
 var terrImgs=[] 								// array che contiene tutte le immagini del terreno
 var enImgs=[] 									// array che contiene tutte le immagini dei nemici
 
-var mx=500;
-var my=500;
+var mx=500,	my=500;
 
 var nemicoProva= new Nemico(1,5,5);
 
+var spostCol=false, col;	//la uso per alternare i passi dello sprite
 
 //QUESTI due incantesimi sarebbe bello metterli in un file separato per pulizia
 
@@ -77,13 +77,24 @@ function provaNemici(){
 		arrayNemici.push(new Nemico(1,i,6));
 }
 
-function drawRotatedImage(image, x, y, angle) { 
+
+function drawRotatedImage2(image, x, y, row) { 
 var TO_RADIANS = Math.PI/180; 
 	actx.save(); 
 	actx.translate(x, y);
-	actx.rotate(angle * TO_RADIANS);
-	actx.drawImage(image, -(image.width/2), -(image.height/2));
+	actx.drawImage(image,0,row,32,32,0,0,32,32);
 	actx.restore(); 
+}
+
+// le due funzioni sono praticamente identiche. dato che ho messo il controllo di cambio immagine quando premo i tasti,
+// quando muovevo l'hero si muovevano anche i teschi. quindi per ora ho diviso le due funzioni solo per evitare sbatti :)
+
+function drawRotatedImage(image, x, y, row) { 
+var TO_RADIANS = Math.PI/180; 
+	actx.save(); 
+	actx.translate(x, y);
+	actx.drawImage(image,col,row,32,32,0,0,32,32);
+	actx.restore();
 }
 
 
@@ -117,7 +128,7 @@ function loadTImages(){							// callback è la funzione da eseguire al verifica
 	}
 }
 function loadEImages(callback){							// callback è la funzione da eseguire al verificarsi di una condizione. nel nostro caso quando si finisce di caricare tutte le immagini.
-	var timg = ["imgs/boh.png","imgs/z.png"];								//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
+	var timg = ["imgs/hero.png","imgs/z.png"];								//percorso delle immagini, notare che la poszione corrisponde alla "codifica" es: immagine in posizione 0 è il terreno libero, 
 	for (var i=0; i< timg.length; i++){					// e nella mappa 0 significa terreno libero
 		loadSingleImg(i,timg,i_prova,1);					// faccio una nuova funzione perchè altrimenti al prossimo ciclo mi sovrascrive l'indice dell'immagine da caricare
 	}
@@ -225,7 +236,7 @@ function Player(x,y,h){
 			actx.strokeStyle="pink";
 			actx.strokeRect(this.rx*32-16,this.ry*32-16,30,30);
 		}
-		drawRotatedImage(enImgs[0],this.x,this.y,fromDirToRot(this.direction));
+		drawRotatedImage(enImgs[0],this.x-16,this.y-16,fromDirToRot2(this.direction));
 	}
 	this.print2=function(){
 		console.log("2")
@@ -270,7 +281,7 @@ function Nemico(img,rx,ry){
 			actx.strokeStyle="yellow";
 			actx.strokeRect((this.plannedR[0]*32)-10,(this.plannedR[1]*32)-10,20,20)			
 		}
-		drawRotatedImage(enImgs[this.img],this.x,this.y,fromDirToRot(this.direzione))	//dimsegno alle sue  x e y con rotazione data dalla direzione attuale
+		drawRotatedImage2(enImgs[this.img],this.x-16,this.y-16,fromDirToRot2(this.direzione))	//dimsegno alle sue  x e y con rotazione data dalla direzione attuale
 	} 
 
 	this.scegliDirezione=function(){
@@ -457,6 +468,42 @@ function castPositive(a){
 		return a
 }
 
+function fromDirToRot2(dir){	//dir x,y c.e: {-1 0 1}
+	var ang=0;
+	var f=0, b=96, dx=64, sx=32;
+	var ndir = dir[0]+","+dir[1]
+	switch (ndir){
+		case '1,0':
+			ang=dx;
+		break;
+		case '1,-1':
+			ang=b;
+		break;
+		case '0,-1':
+			ang=b;
+		break;
+		case '-1,-1':
+			ang=b;
+		break;
+		case '-1,0':
+			ang=sx;
+		break;
+		case '-1,1':
+			ang=sx;
+		break;
+		case '0,1':
+			ang=f;
+		break;
+		case '1,1':
+			ang=dx;
+		break;
+		
+		return ang;
+
+	}
+	return ang;
+}
+
 function fromDirToRot(dir){	//dir x,y c.e: {-1 0 1}
 	var ang=0;
 	var ndir = dir[0]+","+dir[1]
@@ -562,7 +609,19 @@ function newValue(a,b) {
 
 function aCasoBottoni(){
 	var dx=newValue(65, 68);
-	var dy=newValue(87, 83);
+	var dy=newValue(87, 83); 
+	
+	// l'if-else può essere spostato da "qualsiasi" parte
+	
+	if(spostCol){
+		spostCol = false;
+		col=0;
+	}
+	else{
+		spostCol = true;
+		col=32;
+	};
+	
 	return [dx,dy]
 }
 
